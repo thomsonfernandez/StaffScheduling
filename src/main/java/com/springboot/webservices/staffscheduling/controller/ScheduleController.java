@@ -3,6 +3,7 @@ package com.springboot.webservices.staffscheduling.controller;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+import java.security.Principal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -18,16 +19,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.springboot.webservices.staffscheduling.dao.entity.Role;
 import com.springboot.webservices.staffscheduling.dao.entity.Schedule;
 import com.springboot.webservices.staffscheduling.dao.entity.User;
+import com.springboot.webservices.staffscheduling.dao.repository.RoleRepository;
 import com.springboot.webservices.staffscheduling.dao.repository.ScheduleRepository;
 import com.springboot.webservices.staffscheduling.dao.repository.UserRepository;
 import com.springboot.webservices.staffscheduling.exception.GeneralNotAcceptableException;
 import com.springboot.webservices.staffscheduling.exception.NoSchedulesException;
 import com.springboot.webservices.staffscheduling.exception.ScheduleNotFoundException;
+import com.springboot.webservices.staffscheduling.exception.UserNotFoundException;
 import com.springboot.webservices.staffscheduling.payload.ScheduleDto;
 
 
@@ -40,6 +45,8 @@ public class ScheduleController {
 	@Autowired
 	private ScheduleRepository scheduleRepository;
 
+	@Autowired
+	private RoleRepository roleRepository;
 
 	//Get all schedules
 	@GetMapping(path = "/schedules")
@@ -70,10 +77,19 @@ public class ScheduleController {
 
 	//Create schedule
 	@PostMapping("/schedules")
-	public ResponseEntity<?> createSchedule(@RequestBody ScheduleDto scheduleDto){
+	public ResponseEntity<?> createSchedule(@RequestBody ScheduleDto scheduleDto, Principal userLogin){
 
 		Optional<User> user = userRepository.findByUsername(scheduleDto.getUserName());
 
+		Optional<Role> adminRole = roleRepository.findByName("ROLE_ADMIN");
+		
+		String loggedinUserName = userLogin.getName();
+		Optional<User> loggedInUser = userRepository.findByEmail(loggedinUserName);
+		
+		if(!loggedInUser.get().getRoles().contains(adminRole.get())) {
+			return new ResponseEntity<>("Staff user is not authorized to create schedule!", HttpStatus.BAD_REQUEST);
+		}
+		
 		//if user not present
 		if(!user.isPresent()){
 			return new ResponseEntity<>("Username is not present!", HttpStatus.BAD_REQUEST);
@@ -108,7 +124,7 @@ public class ScheduleController {
 		if(schedules == null || schedules.size() == 0)
 			throw new NoSchedulesException("No schedule found!!");
 		Date fromDate = new Date(), toDate = new Date();
-	    try {
+		try {
 			fromDate=new SimpleDateFormat("yyyy-MM-dd").parse(fromDateString);
 		} catch (ParseException e) {
 			throw new GeneralNotAcceptableException("Please enter a valid from date in the format yyyy-MM-dd !");
@@ -118,7 +134,7 @@ public class ScheduleController {
 		} catch (ParseException e) {
 			throw new GeneralNotAcceptableException("Please enter a valid to date in the format yyyy-MM-dd !");
 		}  
-	    
+
 		Long diffInMillies = Math.abs(toDate.getTime() - fromDate.getTime());
 		//Restricting to one year
 		if(diffInMillies > 31557600000L ) {
@@ -131,11 +147,45 @@ public class ScheduleController {
 				iterator.remove();
 			if(itSchedule.getWorkDate().before(fromDate))
 				iterator.remove();
-			
+
 		}
 		return schedules;
 	}
-	
+
+
+	@PutMapping("/schedules/edit/{scheduleid}")
+	public ResponseEntity<?> editSchedule(@PathVariable Long scheduleid, @RequestBody ScheduleDto scheduleDto, Principal userLogin){
+		Optional<User> userRepo = userRepository.findByUsername(scheduleDto.getUserName());
+		Optional<Role> adminRole = roleRepository.findByName("ROLE_ADMIN");
+		
+		String loggedinUserName = userLogin.getName();
+		Optional<User> loggedInUser = userRepository.findByEmail(loggedinUserName);
+		
+		if(!loggedInUser.get().getRoles().contains(adminRole.get())) {
+			return new ResponseEntity<>("Staff user cannot edit any schedules!", HttpStatus.BAD_REQUEST);
+		}
+		
+		if(!userRepo.isPresent())
+			throw new UserNotFoundException("User not found with the username : "+scheduleDto.getUserName());
+		
+		
+		Optional<Schedule> scheduleRepo = scheduleRepository.findById(scheduleid);
+		Schedule schedule = scheduleRepo.get();
+		
+		if(!schedule.getUser().getUsername().equalsIgnoreCase(userRepo.get().getUsername())) {
+			return new ResponseEntity<>("User in the request is different form user in the schedule!", HttpStatus.BAD_REQUEST);
+		}
+		
+		if(schedule != null) {
+			schedule.setShiftHours(scheduleDto.getShiftHours());
+			schedule.setWorkDate(scheduleDto.getWorkDate());
+			scheduleRepository.save(schedule);
+		}else {
+			return new ResponseEntity<>("No schedule available for update!", HttpStatus.BAD_REQUEST);
+		}
+		return new ResponseEntity<>("User schedule updated successfully", HttpStatus.OK);
+	}
+
 	private boolean compareWorkDates(Date date1, Date date2) {
 		String dateString1 = date1.toString();
 		String dateString2 = date2.toString();

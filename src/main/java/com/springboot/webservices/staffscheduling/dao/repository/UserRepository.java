@@ -13,8 +13,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	Optional<User> findByUsername(String username);
 	Boolean existsByUsername(String username);
 	Boolean existsByEmail(String email);
-	/*Optional<User> editUser(User user);
-	Optional<User> deleteUser(User user);
-	List<User> listUsersBasedOnSchedules(Schedule schedule);
-	List<User> listUsersBasedOnSchedulesAndDates(Schedule schedule, Date fromDate, Date toDate);*/
 }

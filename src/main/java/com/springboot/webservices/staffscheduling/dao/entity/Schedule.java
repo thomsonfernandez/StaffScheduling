@@ -31,14 +31,11 @@ public class Schedule {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-//	@NotBlank(message = "Work Date is mandatory")
 	private Date workDate;
 
-//	@NotBlank(message = "Shift Hours is mandatory") 
 	private Double shiftHours;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	//	@JoinColumn(name = "user_name", referencedColumnName = "username")
 	private User user;
 
 	public Long getId() {

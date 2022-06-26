@@ -25,16 +25,13 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-//    @NotBlank(message = "Name is mandatory")
-    @Size(min = 4, max = 20)
+    @Size(min = 4, max = 35)
     private String name;
     
-//    @NotBlank(message = "Username is mandatory")
     @Size(min = 4, max = 15)
     private String username;
     
-//    @NotBlank(message = "Email is mandatory")
-    @Size(min = 4, max = 20)
+    @Size(min = 4, max = 35)
     private String email;
     @JsonIgnore
     private String password;

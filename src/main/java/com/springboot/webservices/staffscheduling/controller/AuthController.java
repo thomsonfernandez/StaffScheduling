@@ -26,71 +26,75 @@ import com.springboot.webservices.staffscheduling.dao.repository.RoleRepository;
 import com.springboot.webservices.staffscheduling.dao.repository.UserRepository;
 import com.springboot.webservices.staffscheduling.payload.LoginDto;
 import com.springboot.webservices.staffscheduling.payload.SignUpDto;
+import com.springboot.webservices.staffscheduling.util.Utils;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+	@Autowired
+	private AuthenticationManager authenticationManager;
 
-    @Autowired
-    private UserRepository userRepository;
+	@Autowired
+	private UserRepository userRepository;
 
-    @Autowired
-    private RoleRepository roleRepository;
+	@Autowired
+	private RoleRepository roleRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
-    @PostMapping("/signin")
-    public ResponseEntity<String> authenticateUser(@RequestBody LoginDto loginDto){
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                loginDto.getUsernameOrEmail(), loginDto.getPassword()));
+	
+	@PostMapping("/signin")
+	public ResponseEntity<String> authenticateUser(@RequestBody LoginDto loginDto){
+		Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+				loginDto.getUsernameOrEmail(), loginDto.getPassword()));
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        
-        return new ResponseEntity<>("User signed-in successfully!.", HttpStatus.OK);
-        
-    }
+		SecurityContextHolder.getContext().setAuthentication(authentication);
 
-    
-    @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@RequestBody SignUpDto signUpDto){
+		return new ResponseEntity<>("User signed-in successfully!.", HttpStatus.OK);
 
-        // add check for username exists in a DB
-        if(userRepository.existsByUsername(signUpDto.getUsername())){
-            return new ResponseEntity<>("Username is already taken!", HttpStatus.BAD_REQUEST);
-        }
+	}
 
-        // add check for email exists in DB
-        if(userRepository.existsByEmail(signUpDto.getEmail())){
-            return new ResponseEntity<>("Email is already taken!", HttpStatus.BAD_REQUEST);
-        }
 
-        // create user object
-        User user = new User();
-        user.setName(signUpDto.getName());
-        user.setUsername(signUpDto.getUsername());
-        user.setEmail(signUpDto.getEmail());
-        user.setPassword(passwordEncoder.encode(signUpDto.getPassword()));
+	@PostMapping("/signup")
+	public ResponseEntity<?> registerUser(@RequestBody SignUpDto signUpDto){
 
-        Role roles = roleRepository.findByName("ROLE_STAFF").get();
-        user.setRoles(Collections.singleton(roles));
+		// add check for username exists in a DB
+		if(userRepository.existsByUsername(signUpDto.getUsername())){
+			return new ResponseEntity<>("Username is already taken!", HttpStatus.BAD_REQUEST);
+		}
+		if(!Utils.validateEmail(signUpDto.getEmail())) {
+			return new ResponseEntity<>("Please enter a valid email!", HttpStatus.BAD_REQUEST);
+		}
+		// add check for email exists in DB
+		if(userRepository.existsByEmail(signUpDto.getEmail())){
+			return new ResponseEntity<>("Email is already taken!", HttpStatus.BAD_REQUEST);
+		}
 
-        userRepository.save(user);
+		// create user object
+		User user = new User();
+		user.setName(signUpDto.getName());
+		user.setUsername(signUpDto.getUsername());
+		user.setEmail(signUpDto.getEmail());
+		user.setPassword(passwordEncoder.encode(signUpDto.getPassword()));
 
-        return new ResponseEntity<>("User registered successfully", HttpStatus.OK);
+		Role roles = roleRepository.findByName("ROLE_STAFF").get();
+		user.setRoles(Collections.singleton(roles));
 
-    }
-    
-    @GetMapping("/signout")
-    public ResponseEntity<String> fetchSignoutSite(HttpServletRequest request, HttpServletResponse response) {        
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null) {
-            new SecurityContextLogoutHandler().logout(request, response, auth);
-        }
-          
-        return new ResponseEntity<>("User signed-out successfully", HttpStatus.OK);
-    }
+		userRepository.save(user);
+
+		return new ResponseEntity<>("User registered successfully", HttpStatus.OK);
+
+	}
+
+	@GetMapping("/signout")
+	public ResponseEntity<String> fetchSignoutSite(HttpServletRequest request, HttpServletResponse response) {        
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth != null) {
+			new SecurityContextLogoutHandler().logout(request, response, auth);
+		}
+
+		return new ResponseEntity<>("User signed-out successfully", HttpStatus.OK);
+	}
 }

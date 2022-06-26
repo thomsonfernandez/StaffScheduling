@@ -7,7 +7,6 @@ import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-//@JsonIgnoreProperties(value = {"password", "userId"})
 public class User {
 
 	@JsonIgnore
