@@ -1,4 +1,5 @@
 
+
 # How To Run The Project
 
 
@@ -53,3 +54,10 @@ URLs for test:
 			14. 	PUT edit user : 					http://localhost:8080/users/edit
 			15. 	GET sign out user : 			http://localhost:8080/api/auth/signout
 			16. 	PUT edit schedule : 			http://localhost:8080/schedules/edit/19
+			
+			
+			
+	
+	
+	
+#OPEN API SPEC : http://localhost:8080/swagger-ui.html
