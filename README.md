@@ -38,20 +38,20 @@ URLs for test:
 
 
 
-			1. 		GET users : 						http://localhost:8080/users
-			2. 		GET user by id : 				http://localhost:8080/users/2
-			3. 		GET schedules:					http://localhost:8080/schedules
+			1. 		GET users : 				http://localhost:8080/users
+			2. 		GET user by id : 			http://localhost:8080/users/2
+			3. 		GET schedules:				http://localhost:8080/schedules
 			4. 		GET schedules by id: 			http://localhost:8080/schedules/1
 			5. 		POST Register user: 			http://localhost:8080/api/auth/signup
-			6. 		POST Login user : 				http://localhost:8080/api/auth/signin
+			6. 		POST Login user : 			http://localhost:8080/api/auth/signin
 			7. 		DELETE user by user name:		http://localhost:8080/users/delete/username/johaan
 			8. 		POST Create schedule:			http://localhost:8080/schedules
-			9. 		GET schedules for user:		http://localhost:8080/users/3/schedules
+			9. 		GET schedules for user:			http://localhost:8080/users/3/schedules
 			10. 		DELETE user by id : 			http://localhost:8080/users/2
-			11. 		GET schedules in date range:	http://localhost:8080/schedules/2021-11-22/2022-06-20
-			12.		GET user schedule date range: http://localhost:8080/users/3/schedules/2021-11-22/2022-06-20
-			13. 		DELETE schedules for user : 	http://localhost:8080/users/3/schedules
-			14. 		PUT edit user : 					http://localhost:8080/users/edit
+			11. 		GET schedules in date range:		http://localhost:8080/schedules/2021-11-22/2022-06-20
+			12.		GET user schedule date range: 		http://localhost:8080/users/3/schedules/2021-11-22/2022-06-20
+			13. 		DELETE schedules for user : 		http://localhost:8080/users/3/schedules
+			14. 		PUT edit user : 			http://localhost:8080/users/edit
 			15. 		GET sign out user : 			http://localhost:8080/api/auth/signout
 			16. 		PUT edit schedule : 			http://localhost:8080/schedules/edit/19
 			
